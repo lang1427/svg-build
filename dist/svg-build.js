@@ -1,3 +1,10 @@
+/**
+ * svg-build
+ * v1.0.0
+ * by Wei Zhixiang
+ * https://github.com/lang1427/svg-build
+ */
+
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
