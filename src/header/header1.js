@@ -155,21 +155,20 @@ const header1 = (dom, opt = {}) => {
             x2: Math.floor(_opt.width - ((_opt.width - textWidth) / 2 - right_angle) - _opt.padding[1] - right_angle / 2),
             y2: Math.floor(_opt.height / 4.5 + _opt.padding[0] + right_angle / 2)
         }
-        return _pathToInclinesGetshorterFade(left_clines.x1, left_clines.y1, left_clines.x2, left_clines.y2, _opt.color, 8, 5, 10, 10) 
-        + _pathToInclinesGetshorterFade(right_clines.x1, right_clines.y1, right_clines.x2, right_clines.y2, _opt.color, 8, 5, 10, 10,"right")
+        return _pathToInclinesGetshorterFade(left_clines.x1, left_clines.y1, left_clines.x2, left_clines.y2, _opt.color, 8, 5, 10, 10)
+            + _pathToInclinesGetshorterFade(right_clines.x1, right_clines.y1, right_clines.x2, right_clines.y2, _opt.color, 8, 5, 10, 10, "right")
     }
 
     let dv = document.createElement('div')
 
-    let svgtag = `<svg width="${_opt.width}" height="${_opt.height}" style="position: absolute;">`
+    let svgtag = `<svg width="${_opt.width}" height="${_opt.height}" style="position: absolute;z-index:0;">`
 
     let svgtagClose = `</svg>`
 
     dv.innerHTML = svgtag + bilateral_decorator() + center_decorator() + clines_decorator() + text + svgtagClose
 
     if (!!vdom.children[0]) {
-        vdom.children[0].style.position = "absolute"
-        vdom.children[0].style.padding = _opt.interval + "px"
+        vdom.children[0].style.position = "relative"
     }
 
     vdom.insertBefore(dv.firstChild, vdom.children[0])

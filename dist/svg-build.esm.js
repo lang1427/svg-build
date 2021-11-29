@@ -75,22 +75,27 @@ var isArray = function isArray(o) {
   return Object.prototype.toString.call(o).slice(8, -1) === 'Array';
 }; // 是否时间
 
+var verify_borderChildren = function verify_borderChildren(v_dom) {
+  if (!!v_dom.children) {
+    return v_dom.children.length == 0 || v_dom.children.length == 1 ? true : console.error('There can be only one child element or no child element in the selector element');
+  }
+
+  return console.error("not fount selector element");
+};
+
 var default_conf = {
   color: "#2862b7",
-  backgroundColor: "#000725"
+  backgroundColor: "transparent"
 };
 
 var _textStyle = {
-  fontSize: 16,
+  fontSize: 14,
   letterSpacing: 0 // 字与字之间的间隔
 
 };
 var _text = function _text(title) {
   var style = "";
-
-  if (title.fontSize !== _textStyle.fontSize) {
-    style += "font-size:".concat(title.fontSize, "px;");
-  }
+  style += "font-size:".concat(title.fontSize ? Number(title.fontSize) : _textStyle.fontSize, "px;");
 
   if (title.letterSpacing !== _textStyle.letterSpacing) {
     style += "letter-spacing:".concat(title.letterSpacing, "px;");
@@ -128,35 +133,59 @@ var _circles = function _circles(cx, cy, r, color) {
 var border1 = function border1(dom) {
   var opt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   var vdom = document.querySelector(dom);
+  verify_borderChildren(vdom);
   var _opt = {
     width: opt.width || vdom.offsetWidth,
     height: opt.height || vdom.offsetHeight,
     interval: opt.interval || 20,
     // 间距
     color: opt.color || default_conf.color,
-    backgroundColor: opt.backgroundColor || default_conf.backgroundColor
+    backgroundColor: opt.backgroundColor || default_conf.backgroundColor,
+    auto: opt.auto || true
   };
   var dv = document.createElement('div');
-  var svgtag = "<svg width=\"".concat(_opt.width, "\" height=\"").concat(_opt.height, "\" style=\"position: absolute;\">");
+  var svgtag = "<svg width=\"".concat(_opt.width, "\" height=\"").concat(_opt.height, "\" style=\"position: absolute;z-index:0;\">");
   var box = "            \n                <polyline points=\"".concat(_opt.interval * 2, " 0,").concat(_opt.interval, " 0,0 ").concat(_opt.interval, ",0 ").concat(_opt.height - _opt.interval, ",").concat(_opt.interval, " ").concat(_opt.height, ",").concat(_opt.interval * 2, " ").concat(_opt.height, "\" style=\"fill:none;stroke:").concat(_opt.color, ";stroke-width:2\" />\n                <polyline points=\"").concat(_opt.width - _opt.interval * 2, " 0,").concat(_opt.width - _opt.interval, " 0,").concat(_opt.width, " ").concat(_opt.interval, ",").concat(_opt.width, " ").concat(_opt.height - _opt.interval, ",").concat(_opt.width - _opt.interval, " ").concat(_opt.height, ",").concat(_opt.width - _opt.interval * 2, " ").concat(_opt.height, "\" style=\"fill:none;stroke:").concat(_opt.color, ";stroke-width:2\" />\n                <polyline points=\"").concat(_opt.interval * 2, " 4,").concat(_opt.interval, " 4,4 ").concat(_opt.interval, ",4 ").concat(_opt.height - _opt.interval, ",").concat(_opt.interval, " ").concat(_opt.height - 4, ",").concat(_opt.interval * 2, " ").concat(_opt.height - 4, ",").concat(_opt.width - _opt.interval, " ").concat(_opt.height - 4, ",").concat(_opt.width - 4, " ").concat(_opt.height - _opt.interval, ",").concat(_opt.width - 4, " ").concat(_opt.interval, ",").concat(_opt.width - _opt.interval, " 4,").concat(_opt.width - _opt.interval * 2, " 4\n                 \"style=\"fill:").concat(_opt.backgroundColor, ";stroke:").concat(_opt.color, ";stroke-width:1;opacity:0.8;\" />         \n                ");
   var svgtagClose = "</svg>";
 
+  var circles = _circles(_opt.interval * 2 + 20, 5, 3, _opt.color, 3);
+
+  var _textX = function _textX() {
+    if (!!opt.title.x) return Number(opt.title.x);
+    var cx_last = _opt.interval * 2 + 20 + (3 - 1) * 6 + 2 * 3 * (3 - 1);
+    var paddingLeft = 10;
+    return cx_last + paddingLeft;
+  };
+
+  var _textY = function _textY() {
+    if (!!opt.title.y) return Number(opt.title.y);
+    var fontSize = opt.title.fontSize || _textStyle.fontSize;
+    var textHeight = parseInt((1.33 * fontSize).toFixed(2));
+    var text_baseline = textHeight / 2 - fontSize / 2;
+    return textHeight - text_baseline * 3;
+  };
+
   var text = _text({
     text: (isObj(opt.title) ? opt.title.text : opt.title) || '',
-    x: opt.title.x || 94,
-    y: opt.title.y || opt.title.fontSize ? opt.title.fontSize - 3 : 13,
+    x: _textX(),
+    y: _textY(),
     color: opt.title.color ? opt.title.color : _opt.color,
     fontSize: opt.title.fontSize,
-    letterSpacing: opt.title.letterSpacing
+    letterSpacing: opt.title.letterSpacing || 0
   });
-
-  var circles = _circles(_opt.interval * 2 + 20, 5, 3, _opt.color, 3);
 
   dv.innerHTML = svgtag + box + text + circles + svgtagClose;
 
   if (!!vdom.children[0]) {
-    vdom.children[0].style.position = "absolute";
-    vdom.children[0].style.padding = _opt.interval + "px";
+    vdom.children[0].style.position = "relative";
+
+    if (_opt.auto) {
+      vdom.children[0].style.padding = _opt.interval + "px";
+
+      if (_textY() > _opt.interval) {
+        vdom.children[0].style.paddingTop = _textY() + 5 + "px";
+      }
+    }
   }
 
   vdom.insertBefore(dv.firstChild, vdom.children[0]);
@@ -442,13 +471,12 @@ var header1 = function header1(dom) {
   };
 
   var dv = document.createElement('div');
-  var svgtag = "<svg width=\"".concat(_opt.width, "\" height=\"").concat(_opt.height, "\" style=\"position: absolute;\">");
+  var svgtag = "<svg width=\"".concat(_opt.width, "\" height=\"").concat(_opt.height, "\" style=\"position: absolute;z-index:0;\">");
   var svgtagClose = "</svg>";
   dv.innerHTML = svgtag + bilateral_decorator() + center_decorator() + clines_decorator() + text + svgtagClose;
 
   if (!!vdom.children[0]) {
-    vdom.children[0].style.position = "absolute";
-    vdom.children[0].style.padding = _opt.interval + "px";
+    vdom.children[0].style.position = "relative";
   }
 
   vdom.insertBefore(dv.firstChild, vdom.children[0]);
